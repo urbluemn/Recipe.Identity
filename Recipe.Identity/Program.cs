@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using IdentityServer4.AspNetIdentity;
 using System;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetValue<string>("DbConnection");
@@ -39,6 +40,8 @@ builder.Services.ConfigureApplicationCookie(config =>
     config.LogoutPath = "/Auth/Logout";
 });
 
+builder.Services.AddControllersWithViews();
+
 var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
@@ -55,8 +58,14 @@ using(var scope = app.Services.CreateScope())
         logger.LogError(exception, "An error occurred while app initialization.");
     }
 }
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Styles")),
+    RequestPath = "/styles"
+});
 app.UseRouting();
 app.UseIdentityServer();
+app.MapDefaultControllerRoute();
 
 app.Run();

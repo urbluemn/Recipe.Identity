@@ -1,0 +1,136 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: monospace;
+    transition: all 500ms ease;
+}
+
+form{
+    border: 3px solid #f1f1f1;     
+}
+
+body{
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -moz-font-feature-settings: "liga" on;
+    font-feature-settings: normal;
+}
+
+.block{
+    text-align: center;
+    padding: 2em 2em 0.5em;
+    width: 40%;
+    margin: 2em auto;
+    font-family: monospace;
+    padding: 16px;
+}
+
+.form-group {
+    margin: 0.5em 0;
+}
+
+label{
+    display: block;
+    font-family: monospace;
+    font-size: large;
+    color: #030303;
+    text-align: left;
+    font-weight: 600;
+}
+
+/* label{
+    font-family: monospace;
+    padding: 10px 15px;
+    font-size: large;
+} */
+
+input[type=text], input[type=password] {
+    font-family: monospace;
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    -webkit-transition: 1s;
+    transition: 1s;
+    outline: none;
+}
+
+input[type=text]:focus, input[type=password]:focus{
+    border: 3px solid #7b728b;
+    padding: 1em 0.5em;
+    animation: pulse 1s;
+}
+
+button{
+    font-family: monospace;
+    background-color: #a191bd;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 50%;
+    border-radius: 5px; 
+}
+
+button:hover{
+    opacity: 0.8;
+}
+
+button.is-loading::after {
+    animation: spinner 500ms infinite linear;
+    content: "";
+    position: absolute;
+    margin-left: 2em;
+    border: 2px solid #000;
+    border-radius: 100%;
+    border-right-color: transparent;
+    border-left-color: transparent;
+    height: 1em;
+    width: 4%; 
+}
+
+a:link { text-decoration: none; }
+a:visited { text-decoration: none; }
+a:hover { text-decoration: none; }
+a:active { text-decoration: none; }
+
+.remember{
+    accent-color: #7b728b;
+}
+
+.header{
+    font-family: monospace;
+    color: #a191bd;
+    font-size: 30px;
+    text-align: center;
+}
+
+span.psw{
+    float: right;
+    padding: 10px;
+}
+
+.cancelbtn{
+    width: auto;
+    padding: 10px;
+    float: left;
+    background-color: #e4948e;
+}
+
+@media screen and (max-width: 300px) {
+span.psw{
+    display: block;
+    float: none;
+} 
+
+.cancelbtn{
+    width: 100%;
+}
+}
+
