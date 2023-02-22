@@ -1,27 +1,23 @@
 @model LoginViewModel
 <head>
     <link href=@Url.Content("~/styles/app.css") rel="stylesheet" type="text/css"/>
+    <meta charset="UTF-8">
+    <title>Login</title>
 </head>
 <body>
     <form asp-controller="Auth" asp-action="Login" method="post">
         <input type="hidden" asp-for="ReturnUrl" />
         <div class="header">Login</div>
         <div class="block">
-            <div>
-                <label id="username"><b>Username</b></label>
-            </div>
-
             <div class="form-group">
-                <input asp-for="Username" class="uname" aria-labelledby="username" type="text" placeholder="Enter Username" required/>
+                <label asp-for="Username"><b>Username</b></label>
+                <input asp-for="Username" class="uname" type="text" placeholder="Enter Username" required/>
                 <span asp-validation-for="Username"></span>
             </div>
 
-            <div>
-                <label id="password"><b>Password</b></label>
-            </div>
-
             <div class="form-group">
-                <input asp-for="Password" class="psw" aria-labelledby="password" type="password" placeholder="Enter Password" required/>
+                <label asp-for="Password"><b>Password</b></label>
+                <input asp-for="Password" class="input" type="password" placeholder="Enter Password" required/>
                 <span asp-validation-for="Password"></span>
             </div>
 
@@ -29,19 +25,21 @@
                 <button type="submit">Sign in</button>
             </div>
 
-            <div class="check_box">
+            <div>
                 <label>
                 <input type="checkbox" checked="checked" class="remember"> Remember me
                 </label>
             </div>
 
-            <div class="cancel_button" style="background-color: #f1f1f1;">
-                <button type="button" class="cancelbtn">Cancel</button>
-            </div>
-
             <div>
                 <span class="psw"><b><a href="#">Forgot password?</a></b></span>
             </div>
+
+            <div style="background-color: #f1f1f1;">
+                <button type="button" class="cancelbtn">Cancel</button>
+            </div>
+            <span class="psw"><b>Don't have an account?
+                <a asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl"> Register here.</a></b></span>
         </div>
     </form>
 </body>

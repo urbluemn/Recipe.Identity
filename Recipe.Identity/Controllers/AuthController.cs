@@ -17,7 +17,7 @@ namespace Recipe.Identity.Controllers
 
         public AuthController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager,
         IIdentityServerInteractionService interactionService) =>
-        (_signInManager, _userManager, _interactionService) = 
+        (_signInManager, _userManager, _interactionService) =
         (signInManager, userManager, interactionService);
 
         [HttpGet]
@@ -46,7 +46,7 @@ namespace Recipe.Identity.Controllers
             }
 
             var result = await _signInManager.PasswordSignInAsync(viewModel.Username,
-            viewModel.Password, false, false);
+            viewModel.Password, true, false);
             if(result.Succeeded)
             {
                 return Redirect(viewModel.ReturnUrl);
@@ -55,5 +55,45 @@ namespace Recipe.Identity.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
+        public IActionResult Register(string returnUrl)
+        {
+            var viewModel = new RegisterViewModel
+            {
+                ReturnUrl = returnUrl
+            };
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel viewModel)
+        {
+            if(!ModelState.IsValid)
+            {
+                return View(viewModel);
+            }
+
+            var user = new AppUser
+            {
+                UserName = viewModel.Username
+            };
+
+            var result = await _userManager.CreateAsync(user, viewModel.Password);
+            if(result.Succeeded)
+            {
+                await _signInManager.SignInAsync(user, true);
+                return Redirect(viewModel.ReturnUrl);
+            }
+            ModelState.AddModelError(string.Empty, "Error occureed");
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Logout(string logoutId)
+        {
+            await _signInManager.SignOutAsync();
+            var logoutRequest = await _interactionService.GetLogoutContextAsync(logoutId);
+            return Redirect(logoutRequest.PostLogoutRedirectUri);
+        }
     }
 }
