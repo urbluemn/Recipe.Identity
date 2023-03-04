@@ -20,5 +20,6 @@ namespace Recipe.Identity.Models
         [Compare("Password")]
         public string ConfirmPassword { get; set; }
         public string ReturnUrl { get; set; }
+        public bool RememberMe { get; set; }
     }
 }

@@ -4,7 +4,7 @@
 <head>
     <link href=@Url.Content("~/styles/app.css") rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Sign In</title>
 </head>
 <body>
     <section>
@@ -15,14 +15,18 @@
                     <h2>Sign In</h2>
                     <div class="inputbox">
                         <ion-icon name="person-outline"></ion-icon>
-                        <input asp-for="Username" type="text" required/>
+                        <input asp-for="Username" type="text" required
+                            oninvalid="this.setCustomValidity('Enter username here')"
+                            oninput="this.setCustomValidity('')"/>
                         <label asp-for="Username">Username</label>
                         <span asp-validation-for="Username"></span>
                     </div>
 
                     <div class="inputbox">
                         <ion-icon name="lock-closed-outline"></ion-icon>
-                        <input asp-for="Password" type="password" required/>
+                        <input asp-for="Password" type="password" required
+                            oninvalid="this.setCustomValidity('Enter password here')" 
+                            oninput="this.setCustomValidity('')"/>
                         <label asp-for="Password">Password</label>
                         <span asp-validation-for="Password"></span>
                     </div>

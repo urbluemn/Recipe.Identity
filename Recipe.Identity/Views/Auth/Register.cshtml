@@ -1,54 +1,82 @@
 @model RegisterViewModel
+<!DOCTYPE html>
+<html>
 <head>
     <link href=@Url.Content("~/styles/app.css") rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <title>Sign Up</title>
+    <style>
+        section {
+            background: url("../styles/images/registerback.jpg") no-repeat;
+            background-color: #FFD4D4;
+            background-position: center;
+            background-size: cover;
+        }
+
+        .form-box {
+            position: relative;
+            width: 400px;
+            height: 530px;
+        }
+    </style>
 </head>
 <body>
-    <form asp-controller="Auth" asp-action="Register" method="post">
-        <input type="hidden" asp-for="ReturnUrl" />
-        <div class="header">Sign Up</div>
-        <div class="block">
-            <div class="form-group">
-                <label asp-for="Username"><b>Username</b></label>
-                <input asp-for="Username" class="input" type="text" placeholder="Create username" required/>
-                <span asp-validation-for="Username"></span>
-            </div>
+    <section>
+        <div class="form-box">
+            <div class="form-value">
+                <form asp-controller="Auth" asp-action="Register" method="post">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    <h2>Sign Up</h2>
+                    <div class="inputbox">
+                        <ion-icon name="person-outline"></ion-icon>
+                        <input asp-for="Username" type="text" required
+                            oninvalid="this.setCustomValidity('Enter username here')"
+                            oninput="this.setCustomValidity('')"/>
+                        <label asp-for="Username">Username</label>
+                        <span asp-validation-for="Username"></span>
+                    </div>
+                    
+                    <div class="inputbox">
+                        <ion-icon name="at-circle-outline"></ion-icon>
+                        <input asp-for="Email" type="email" required
+                            oninvalid="this.setCustomValidity('Enter email here')"
+                            oninput="this.setCustomValidity('')"/>
+                        <label asp-for="Email">Email</label>
+                        <span asp-validation-for="Email"></span>
+                    </div>
 
-            <div class="form-group">
-                <label asp-for="Email"><b>Email</b></label>
-                <input asp-for="Email" class="input" type="text" placeholder="example@gmail.com" required/>
-                <span asp-validation-for="Email"></span>
-            </div>
+                    <div class="inputbox">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input asp-for="Password" type="password" required
+                            oninvalid="this.setCustomValidity('Enter password here')" 
+                            oninput="this.setCustomValidity('')"/>
+                        <label asp-for="Password">Password</label>
+                        <span asp-validation-for="Password"></span>
+                    </div>
 
-            <div class="form-group">
-                <label asp-for="Password"><b>Password</b></label>
-                <input asp-for="Password" class="input" type="password" placeholder="Create Password" required/>
-                <span asp-validation-for="Password"></span>
-            </div>
+                    <div class="inputbox">
+                        <ion-icon name="lock-closed-outline"></ion-icon>
+                        <input asp-for="ConfirmPassword" type="password" required
+                            oninvalid="this.setCustomValidity('Confirm password')" 
+                            oninput="this.setCustomValidity('')"/>
+                        <label asp-for="ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="ConfirmPassword"></span>
+                    </div>
 
-            <div class="form-group">
-                <input asp-for="ConfirmPassword" class="input" type="password" placeholder="Confirm your password" required/>
-                <span asp-validation-for="ConfirmPassword"></span>
-            </div>
+                    <div class="forget">
+                        <label for=""><input type="checkbox">Remember Me</label>
+                    </div>
+                    <button type="submit">Sign Up</button>
 
-            <div>
-                <button type="submit">Sign up</button>
-            </div>
-
-            <div>
-                <label>
-                <input type="checkbox" checked="checked" class="remember"> Remember me
-                </label>
-            </div>
-
-            <div style="background-color: #f1f1f1;">
-                <button type="button" class="cancelbtn">Cancel</button>
-            </div>
-
-                <span class="psw"><b>Already have an account?
-                    <a asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl"> Sign in</a></b></span>
-            
+                    <div class="register">
+                        <p>Already have an account?<a asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl"> Sign in</a></p>
+                    </div>
+                    
+                </form>
+            </div>    
         </div>
-    </form>
+    </section>
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 </body>
+</html>
