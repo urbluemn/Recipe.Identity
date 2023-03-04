@@ -1,3 +1,4 @@
+using System.IO;
 using Recipe.Identity;
 using Recipe.Identity.Data;
 using Recipe.Identity.Models;
@@ -38,6 +39,8 @@ builder.Services.ConfigureApplicationCookie(config =>
     config.Cookie.Name = "Recipe.Identity.Cookie";
     config.LoginPath = "/Auth/Login";
     config.LogoutPath = "/Auth/Logout";
+    config.ExpireTimeSpan = TimeSpan.FromDays(10);
+    config.SlidingExpiration = true;
 });
 
 builder.Services.AddControllersWithViews();
@@ -58,14 +61,15 @@ using(var scope = app.Services.CreateScope())
         logger.LogError(exception, "An error occurred while app initialization.");
     }
 }
-app.UseStaticFiles(new StaticFileOptions
+app.UseStaticFiles(/*new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "Styles")),
-    RequestPath = "/styles"
-});
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot")),
+    RequestPath = "/wwwroot"
+}*/);
 app.UseRouting();
 app.UseIdentityServer();
+// app.UseCookiePolicy();
 app.MapDefaultControllerRoute();
 
 app.Run();

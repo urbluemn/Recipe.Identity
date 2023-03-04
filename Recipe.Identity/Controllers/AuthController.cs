@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Recipe.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using IdentityServer4.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Recipe.Identity.Controllers
 {
@@ -46,10 +49,28 @@ namespace Recipe.Identity.Controllers
             }
 
             var result = await _signInManager.PasswordSignInAsync(viewModel.Username,
-            viewModel.Password, true, false);
+            viewModel.Password, /*viewModel.RememberMe*/true, false);
             if(result.Succeeded)
             {
-                return Redirect(viewModel.ReturnUrl);
+                // if(!string.IsNullOrEmpty(viewModel.ReturnUrl) && Url.IsLocalUrl(viewModel.ReturnUrl)){
+                    return Redirect(viewModel.ReturnUrl);
+                // }
+                // else{
+                //     var claims = new List<Claim>
+                //     {
+                //         new Claim(ClaimTypes.Name, viewModel.Username),
+                //         new Claim(ClaimTypes.NameIdentifier, user.Id)
+                //     };
+
+                //     var Identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                //     var principal = new ClaimsPrincipal(Identity);
+                //     var props = new AuthenticationProperties{
+                //         IsPersistent = true,
+                //         ExpiresUtc = DateTime.UtcNow.AddDays(10)
+                //     };
+                //     HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, props).Wait();
+                //     return RedirectToAction("UserProfile");
+                // }
             }
             ModelState.AddModelError(string.Empty, "Login error");
             return View(viewModel);
