@@ -5,7 +5,6 @@ using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityModel;
 
-
 namespace Recipe.Identity
 {
     public static class Configuration
@@ -14,13 +13,6 @@ namespace Recipe.Identity
         new List<ApiScope>
         {
             new ApiScope("RecipeWebAPI", "Web API")
-        };
-
-        public static IEnumerable<IdentityResource> IdentityResources =>
-        new List<IdentityResource>
-        {
-            new IdentityResources.OpenId(),
-            new IdentityResources.Profile()
         };
 
         public static IEnumerable<ApiResource> ApiResources =>
@@ -33,6 +25,13 @@ namespace Recipe.Identity
             }
         };
 
+        public static IEnumerable<IdentityResource> IdentityResources =>
+        new List<IdentityResource>
+        {
+            new IdentityResources.OpenId(),
+            new IdentityResources.Profile()
+        };
+
         public static IEnumerable<Client> Clients =>
         new List<Client>
         {
@@ -43,7 +42,7 @@ namespace Recipe.Identity
                 AllowedGrantTypes = GrantTypes.Code,
                 RequirePkce = true,
                 RequireClientSecret = false,
-                RedirectUris = 
+                RedirectUris =
                 {
                     "https://.../signin-oidc"
                 },

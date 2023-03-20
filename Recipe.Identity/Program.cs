@@ -13,9 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetValue<string>("DbConnection");
 
 builder.Services.AddDbContext<AuthDbContext>(opts =>
-{
-    opts.UseSqlite(connectionString);
-});
+    opts.UseSqlite(connectionString));
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(config =>
 {
@@ -23,8 +21,8 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(config =>
     config.Password.RequireDigit = false;
     config.Password.RequireNonAlphanumeric = false;
 })
-.AddEntityFrameworkStores<AuthDbContext>()
-.AddDefaultTokenProviders();
+    .AddEntityFrameworkStores<AuthDbContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddIdentityServer()
     .AddAspNetIdentity<AppUser>()
@@ -43,7 +41,8 @@ builder.Services.ConfigureApplicationCookie(config =>
     config.SlidingExpiration = true;
 });
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddRazorRuntimeCompilation();
 
 var app = builder.Build();
 
@@ -61,6 +60,7 @@ using(var scope = app.Services.CreateScope())
         logger.LogError(exception, "An error occurred while app initialization.");
     }
 }
+app.UseDefaultFiles();
 app.UseStaticFiles(/*new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(

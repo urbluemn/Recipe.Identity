@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Recipe.Identity.Data
 {
-    public class DbInitializer
+    public static class DbInitializer
     {
         public static void Initialize(AuthDbContext context)
         {

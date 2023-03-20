@@ -18,10 +18,12 @@ namespace Recipe.Identity.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IIdentityServerInteractionService _interactionService;
 
-        public AuthController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager,
-        IIdentityServerInteractionService interactionService) =>
-        (_signInManager, _userManager, _interactionService) =
-        (signInManager, userManager, interactionService);
+        public AuthController(
+            SignInManager<AppUser> signInManager,
+            UserManager<AppUser> userManager,
+            IIdentityServerInteractionService interactionService) =>
+            (_signInManager, _userManager, _interactionService) =
+            (signInManager, userManager, interactionService);
 
         [HttpGet]
         public IActionResult Login(string returnUrl)
@@ -49,7 +51,7 @@ namespace Recipe.Identity.Controllers
             }
 
             var result = await _signInManager.PasswordSignInAsync(viewModel.Username,
-            viewModel.Password, /*viewModel.RememberMe*/true, false);
+            viewModel.Password, viewModel.RememberMe, false);
             if(result.Succeeded)
             {
                 // if(!string.IsNullOrEmpty(viewModel.ReturnUrl) && Url.IsLocalUrl(viewModel.ReturnUrl)){
@@ -91,6 +93,11 @@ namespace Recipe.Identity.Controllers
         {
             if(!ModelState.IsValid)
             {
+                var errors = ModelState.Values.SelectMany(x=>x.Errors);
+                foreach(var e in errors)
+                {
+                    ViewBag.Message = e.ToString();
+                }
                 return View(viewModel);
             }
 
@@ -99,13 +106,21 @@ namespace Recipe.Identity.Controllers
                 UserName = viewModel.Username
             };
 
-            var result = await _userManager.CreateAsync(user, viewModel.Password);
-            if(result.Succeeded)
+            if(_userManager.FindByNameAsync(viewModel.Username) == null)
             {
-                await _signInManager.SignInAsync(user, true);
-                return Redirect(viewModel.ReturnUrl);
+                var result = await _userManager.CreateAsync(user, viewModel.Password);
+                if(result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, viewModel.RememberMe);
+                    return Redirect(viewModel.ReturnUrl);
+                }
             }
-            ModelState.AddModelError(string.Empty, "Error occureed");
+            else if(_userManager.FindByNameAsync(viewModel.Username) != null)
+            {
+                ModelState.AddModelError(string.Empty, "Username is taken");
+                return View(viewModel);
+            }
+            ModelState.AddModelError(string.Empty, "Error occured");
             return View(viewModel);
         }
 
