@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 
-namespace Recipe.Identity.Models
+namespace Recipe.Identity.Models.Login
 {
-    public class LoginViewModel
+    public class LoginInputModel
     {
         [Required]
         public string Username { get; set; }
@@ -14,6 +14,6 @@ namespace Recipe.Identity.Models
         [DataType(DataType.Password)]
         public string Password { get; set; }
         public string ReturnUrl { get; set; }
-        public bool RememberMe { get; set; }
+        public bool RememberLogin { get; set; }
     }
 }

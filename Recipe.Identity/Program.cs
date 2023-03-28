@@ -10,16 +10,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
-var connectionString = builder.Configuration.GetValue<string>("DbConnection");
 
-builder.Services.AddDbContext<AuthDbContext>(opts =>
-    opts.UseSqlite(connectionString));
+//Configure services
+builder.Services.AddControllersWithViews()
+    .AddRazorRuntimeCompilation();
+
+builder.Services.AddPersistence(builder.Configuration);
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(config =>
 {
     config.Password.RequiredLength = 4;
     config.Password.RequireDigit = false;
     config.Password.RequireNonAlphanumeric = false;
+    config.Password.RequireUppercase = false;
 })
     .AddEntityFrameworkStores<AuthDbContext>()
     .AddDefaultTokenProviders();
@@ -37,15 +40,13 @@ builder.Services.ConfigureApplicationCookie(config =>
     config.Cookie.Name = "Recipe.Identity.Cookie";
     config.LoginPath = "/Auth/Login";
     config.LogoutPath = "/Auth/Logout";
-    config.ExpireTimeSpan = TimeSpan.FromDays(10);
+    config.ExpireTimeSpan = TimeSpan.FromDays(1);
     config.SlidingExpiration = true;
 });
 
-builder.Services.AddControllersWithViews()
-    .AddRazorRuntimeCompilation();
-
 var app = builder.Build();
 
+//Setup
 using(var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
@@ -61,15 +62,10 @@ using(var scope = app.Services.CreateScope())
     }
 }
 app.UseDefaultFiles();
-app.UseStaticFiles(/*new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "wwwroot")),
-    RequestPath = "/wwwroot"
-}*/);
+app.UseStaticFiles();
 app.UseRouting();
 app.UseIdentityServer();
-// app.UseCookiePolicy();
+
 app.MapDefaultControllerRoute();
 
 app.Run();

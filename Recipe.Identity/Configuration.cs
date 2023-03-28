@@ -42,6 +42,8 @@ namespace Recipe.Identity
                 AllowedGrantTypes = GrantTypes.Code,
                 RequirePkce = true,
                 RequireClientSecret = false,
+                RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                AllowOfflineAccess = true,
                 RedirectUris =
                 {
                     "https://.../signin-oidc"
@@ -52,7 +54,37 @@ namespace Recipe.Identity
                 },
                 PostLogoutRedirectUris =
                 {
-                    "https://.../signout-oidc"
+                    "https://.../signout-callback-oidc"
+                },
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    "RecipeWebAPI"
+                },
+                AllowAccessTokensViaBrowser = true
+            },
+
+            new Client
+            {
+                ClientId = "client_mvc",
+                ClientSecrets = {new Secret("client_secret_mvc".ToSha256())},
+                ClientName = "Recipe MVC",
+                AllowedGrantTypes = GrantTypes.Code,
+                RequirePkce = true,
+                RefreshTokenUsage = TokenUsage.OneTimeOnly,
+                AllowOfflineAccess = true,
+                RedirectUris =
+                {
+                    "https://localhost:7001/signin-oidc"
+                },
+                // AllowedCorsOrigins =
+                // {
+                //     "https://localhost:7001"
+                // },
+                PostLogoutRedirectUris =
+                {
+                    "https://localhost:7001/signout-callback-oidc"
                 },
                 AllowedScopes =
                 {

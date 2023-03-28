@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Recipe.Identity.Models
+namespace Recipe.Identity.Models.Register
 {
-    public class RegisterViewModel
+    public class RegisterInputModel
     {
         [Required]
         public string Username { get; set; }
@@ -20,6 +20,6 @@ namespace Recipe.Identity.Models
         [Compare("Password")]
         public string ConfirmPassword { get; set; }
         public string ReturnUrl { get; set; }
-        public bool RememberMe { get; set; }
+        public bool RememberLogin { get; set; }
     }
 }

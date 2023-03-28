@@ -9,6 +9,7 @@ namespace Recipe.Identity.Data
     {
         public static void Initialize(AuthDbContext context)
         {
+            context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
         }
     }

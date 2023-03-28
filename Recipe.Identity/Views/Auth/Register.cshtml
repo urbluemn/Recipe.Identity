@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href=@Url.Content("~/styles/app.css") rel="stylesheet" type="text/css"/>
+    <link href="../styles/app.css" rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
     <title>Sign Up</title>
     <style>
@@ -16,24 +16,27 @@
         .form-box {
             position: relative;
             width: 400px;
-            height: 530px;
+            height: 540px;
         }
     </style>
 </head>
 <body>
     <section>
+        @if(Model.EnableLocalLogin)
+        {
         <div class="form-box">
             <div class="form-value">
                 <form asp-controller="Auth" asp-action="Register" method="post">
                     <input type="hidden" asp-for="ReturnUrl" />
                     <h2>Sign Up</h2>
+                    <partial name="_ValidationSummary" />
                     <div class="inputbox">
                         <ion-icon name="person-outline"></ion-icon>
                         <input asp-for="Username" type="text" required
                             oninvalid="this.setCustomValidity('Enter username here')"
                             oninput="this.setCustomValidity('')"/>
                         <label asp-for="Username">Username</label>
-                        <span asp-validation-for="Username"></span>
+                        @* <span asp-validation-for="Username"></span> *@
                     </div>
                     
                     <div class="inputbox">
@@ -42,7 +45,7 @@
                             oninvalid="this.setCustomValidity('Enter email here')"
                             oninput="this.setCustomValidity('')"/>
                         <label asp-for="Email">Email</label>
-                        <span asp-validation-for="Email"></span>
+                        @* <span asp-validation-for="Email"></span> *@
                     </div>
 
                     <div class="inputbox">
@@ -51,7 +54,7 @@
                             oninvalid="this.setCustomValidity('Enter password here')" 
                             oninput="this.setCustomValidity('')"/>
                         <label asp-for="Password">Password</label>
-                        <span asp-validation-for="Password"></span>
+                        @* <span asp-validation-for="Password"></span> *@
                     </div>
 
                     <div class="inputbox">
@@ -60,13 +63,15 @@
                             oninvalid="this.setCustomValidity('Confirm password')" 
                             oninput="this.setCustomValidity('')"/>
                         <label asp-for="ConfirmPassword">Confirm Password</label>
-                        <span asp-validation-for="ConfirmPassword"></span>
+                        @* <span asp-validation-for="ConfirmPassword"></span> *@
                     </div>
-
+                    @if(Model.AllowRememberLogin)
+                    {
                     <div class="forget">
-                        <label for=""><input type="checkbox" asp-for="RememberMe">Remember Me</label>
+                        <label for=""><input type="checkbox" asp-for="RememberLogin">Remember Me</label>
                     </div>
-                    <button type="submit">Sign Up</button>
+                    }
+                    <button class="btn-primary" name="button" type="submit">Sign Up</button>
 
                     <div class="register">
                         <p>Already have an account?<a asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl"> Sign in</a></p>
@@ -75,6 +80,7 @@
                 </form>
             </div>    
         </div>
+        }
     </section>
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>

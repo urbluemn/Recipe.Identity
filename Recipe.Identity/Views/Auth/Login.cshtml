@@ -2,24 +2,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href=@Url.Content("~/styles/app.css") rel="stylesheet" type="text/css"/>
+    <link href="../styles/app.css" rel="stylesheet" type="text/css"/>
     <meta charset="UTF-8">
     <title>Sign In</title>
 </head>
 <body>
     <section>
+        @if(Model.EnableLocalLogin)
+        {
         <div class="form-box">
             <div class="form-value">
                 <form asp-controller="Auth" asp-action="Login" method="post">
                     <input type="hidden" asp-for="ReturnUrl" />
                     <h2>Sign In</h2>
+                    <partial name="_ValidationSummary" />
                     <div class="inputbox">
                         <ion-icon name="person-outline"></ion-icon>
                         <input asp-for="Username" type="text" required
                             oninvalid="this.setCustomValidity('Enter username here')"
                             oninput="this.setCustomValidity('')"/>
                         <label asp-for="Username">Username</label>
-                        <span asp-validation-for="Username"></span>
+                        @* <span asp-validation-for="Username"></span> *@
                     </div>
 
                     <div class="inputbox">
@@ -28,22 +31,28 @@
                             oninvalid="this.setCustomValidity('Enter password here')" 
                             oninput="this.setCustomValidity('')"/>
                         <label asp-for="Password">Password</label>
-                        <span asp-validation-for="Password"></span>
+                        @* <span asp-validation-for="Password"></span> *@
                     </div>
 
                     <div class="forget">
-                        <label for=""><input type="checkbox" asp-for="RememberMe">Remember Me</label>
+                        @if(Model.AllowRememberLogin)
+                        {
+                        <label for=""><input type="checkbox" asp-for="RememberLogin">Remember Me</label>
+                        }
                         <a href="#">Forgot Password?</a>
                     </div>
-                    <button type="submit">Sign In</button>
 
+                    <button class="btn-primary" name="Sign In" type="submit">Sign In</button>
+                    
                     <div class="register">
                         <p>Don't have an account?<a asp-controller="Auth" asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl"> Register here.</a></p>
                     </div>
+                    <button class="btn-secondary" name="Cancel" type="cancel">Cancel</button>
                     
                 </form>
             </div>    
         </div>
+        }
     </section>
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
