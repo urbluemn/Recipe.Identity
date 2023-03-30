@@ -19,7 +19,7 @@ namespace Recipe.Identity.Models.Register
         [DataType(DataType.Password)]
         [Compare("Password")]
         public string ConfirmPassword { get; set; }
-        public string ReturnUrl { get; set; }
+        public string? ReturnUrl { get; set; }
         public bool RememberLogin { get; set; }
     }
 }

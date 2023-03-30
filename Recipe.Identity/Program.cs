@@ -23,6 +23,8 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(config =>
     config.Password.RequireDigit = false;
     config.Password.RequireNonAlphanumeric = false;
     config.Password.RequireUppercase = false;
+
+    config.User.RequireUniqueEmail = true;
 })
     .AddEntityFrameworkStores<AuthDbContext>()
     .AddDefaultTokenProviders();
@@ -61,8 +63,13 @@ using(var scope = app.Services.CreateScope())
         logger.LogError(exception, "An error occurred while app initialization.");
     }
 }
+if(app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
 app.UseRouting();
 app.UseIdentityServer();
 

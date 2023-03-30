@@ -8,9 +8,7 @@ namespace Recipe.Identity.Models
 {
     public class ErrorViewModel
     {
-        public ErrorViewModel()
-        {
-        }
+        public ErrorViewModel() { }
 
         public ErrorViewModel(string error)
         {

@@ -13,6 +13,8 @@ using Recipe.Identity.Extensions;
 using IdentityServer4;
 using IdentityModel;
 using IdentityServer4.Extensions;
+using IdentityServer4.Events;
+using System.Diagnostics;
 
 namespace Recipe.Identity.Controllers
 {
@@ -21,14 +23,17 @@ namespace Recipe.Identity.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
         private readonly IIdentityServerInteractionService _interactionService;
+        private readonly IEventService _eventService;
 
         public AuthController(
             SignInManager<AppUser> signInManager,
             UserManager<AppUser> userManager,
-            IIdentityServerInteractionService interactionService) =>
-            (_signInManager, _userManager, _interactionService) =
-            (signInManager, userManager, interactionService);
+            IIdentityServerInteractionService interactionService,
+            IEventService eventService) =>
+            (_signInManager, _userManager, _interactionService, _eventService) =
+            (signInManager, userManager, interactionService, eventService);
 
+        //Login methods
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
@@ -47,31 +52,20 @@ namespace Recipe.Identity.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginInputModel viewModel, string button)
+        public async Task<IActionResult> Login(LoginViewModel viewModel)
         {
             var context = await _interactionService.GetAuthorizationContextAsync(viewModel.ReturnUrl);
 
-            // the user clicked the "cancel" button
-            if (button != "Sign In" && context != null)
-            {
-                // if the user cancels, send a result back into IdentityServer as if they 
-                // denied the consent (even if this client does not require consent).
-                // this will send back an access denied OIDC error response to the client.
-                await _interactionService.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
-
-                // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                if (context.IsNativeClient())
-                {
-                    // The client is native, so this change in how to
-                    // return the response is for better UX for the end user.
-                    return this.LoadingPage("Redirect", viewModel.ReturnUrl);
-                }
-
-                return Redirect(viewModel.ReturnUrl);
-            }
-
             if (ModelState.IsValid)
             {
+                var user = await _userManager.FindByNameAsync(viewModel.Username);
+                    if(user == null)
+                    {
+                        ModelState.AddModelError(string.Empty, "User not found");
+                        return View(viewModel);
+                    }
+
+                await _eventService.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
                 // only set explicit expiration here if user chooses "remember me". 
                 // otherwise we rely upon expiration configured in cookie middleware.
                 AuthenticationProperties props = null;
@@ -83,13 +77,6 @@ namespace Recipe.Identity.Controllers
                         ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
                     };
                 }
-
-                var user = await _userManager.FindByNameAsync(viewModel.Username);
-                    if(user == null)
-                    {
-                        ModelState.AddModelError(string.Empty, "User not found");
-                        return View(viewModel);
-                    }
 
                 await _signInManager.SignInAsync(user, props);
 
@@ -111,6 +98,10 @@ namespace Recipe.Identity.Controllers
                 {
                     return Redirect(viewModel.ReturnUrl);
                 }
+                else if(string.IsNullOrEmpty(viewModel.ReturnUrl))
+                {
+                    return Redirect("https://localhost:7001");
+                }
                 else
                 {
                     // user might have clicked on a malicious link - should be logged
@@ -118,10 +109,35 @@ namespace Recipe.Identity.Controllers
                 }
             }
 
+            await _eventService.RaiseAsync(new UserLoginFailureEvent(viewModel.Username, "invalid credentials", clientId:context?.Client.ClientId));
+            ModelState.AddModelError(string.Empty, AccountOptions.InvalidCredentialsErrorMessage);
+
             // something went wrong, show form with error
             var vm = await BuildLoginViewModelAsync(viewModel);
             return View(vm);
         }
+
+        private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
+        {
+            var context = await _interactionService.GetAuthorizationContextAsync(returnUrl);
+
+            return new LoginViewModel
+            {
+                AllowRememberLogin = AccountOptions.AllowRememberLogin,
+                EnableLocalLogin = AccountOptions.AllowLocalLogin,
+                ReturnUrl = returnUrl,
+                Username = context?.LoginHint
+            };
+        }
+
+        private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
+        {
+            var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
+            vm.Username = model.Username;
+            vm.RememberLogin = model.RememberLogin;
+            return vm;
+        }
+
             //Old Login Post
             // if(!ModelState.IsValid)
             // {
@@ -147,6 +163,7 @@ namespace Recipe.Identity.Controllers
             // ModelState.AddModelError(string.Empty, "Login error");
             // return View(viewModel);
 
+        //Register methods
         [HttpGet]
         public IActionResult Register(string returnUrl)
         {
@@ -158,14 +175,9 @@ namespace Recipe.Identity.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel viewModel, string button)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel viewModel)
         {
-
-            if (button != "register")
-            {
-                return Redirect(viewModel.ReturnUrl);
-            }
-
             if (ModelState.IsValid)
             {
                 AuthenticationProperties props = null;
@@ -191,6 +203,10 @@ namespace Recipe.Identity.Controllers
                 if (Url.IsLocalUrl(viewModel.ReturnUrl))
                 {
                     return Redirect(viewModel.ReturnUrl);
+                }
+                if (string.IsNullOrEmpty(viewModel.ReturnUrl))
+                {
+                    return Redirect("https://localhost:7001");
                 }
                 else
                 {
@@ -230,58 +246,37 @@ namespace Recipe.Identity.Controllers
             // return View(viewModel);
         //}
 
+        //Logout methods
         [HttpGet]
         public async Task<IActionResult> Logout(string logoutId)
         {
-            await _signInManager.SignOutAsync();
-            var logoutRequest = await _interactionService.GetLogoutContextAsync(logoutId);
-            return Redirect(logoutRequest.PostLogoutRedirectUri);
-        }
+            var vm = await BuildLogoutViewModelAsync(logoutId);
 
-        /*****************************************/
-        /* helper APIs for the AccountController */
-        /*****************************************/
-        private async Task<LoginViewModel> BuildLoginViewModelAsync(string returnUrl)
-        {
-            var context = await _interactionService.GetAuthorizationContextAsync(returnUrl);
-
-            return new LoginViewModel
+            if (!vm.ShowLogoutPrompt)
             {
-                AllowRememberLogin = AccountOptions.AllowRememberLogin,
-                EnableLocalLogin = AccountOptions.AllowLocalLogin,
-                ReturnUrl = returnUrl,
-                Username = context?.LoginHint
-            };
+                return await Logout(vm);
+            }
+
+            return View(vm);
         }
 
-        private async Task<LoginViewModel> BuildLoginViewModelAsync(LoginInputModel model)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout(LogoutInputModel viewModel)
         {
-            var vm = await BuildLoginViewModelAsync(model.ReturnUrl);
-            vm.Username = model.Username;
-            vm.RememberLogin = model.RememberLogin;
-            return vm;
+            var vm = await BuildLoggedOutViewModelAsync(viewModel.LogoutId);
+
+            if (User?.Identity.IsAuthenticated == true)
+            {
+                // delete local authentication cookie
+                await HttpContext.SignOutAsync();
+                await _signInManager.SignOutAsync();
+
+                // raise the logout event
+                await _eventService.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
+            }
+            return View("LoggedOut", vm);
         }
-        // private async Task<RegisterViewModel> BuildRegisterViewModelAsync(string returnUrl)
-        // {
-        //     var context = await _interactionService.GetAuthorizationContextAsync(returnUrl);
-
-        //     return new RegisterViewModel
-        //     {
-        //         AllowRememberLogin = AccountOptions.AllowRememberLogin,
-        //         EnableLocalLogin = AccountOptions.AllowLocalLogin,
-        //         ReturnUrl = returnUrl,
-        //         Username = context?.LoginHint,
-        //         Email = context?.DisplayMode
-        //     };
-        // }
-
-        // private async Task<RegisterViewModel> BuildRegisterViewModelAsync(RegisterViewModel model)
-        // {
-        //     var vm = await BuildRegisterViewModelAsync(model.ReturnUrl);
-        //     vm.Username = model.Username;
-        //     vm.RememberLogin = model.RememberLogin;
-        //     return vm;
-        // }
 
         private async Task<LogoutViewModel> BuildLogoutViewModelAsync(string logoutId)
         {
@@ -310,17 +305,23 @@ namespace Recipe.Identity.Controllers
         private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId)
         {
             // get context information (client name, post logout redirect URI and iframe for federated signout)
-            var logout = await _interactionService.GetLogoutContextAsync(logoutId);
+            var context = await _interactionService.GetLogoutContextAsync(logoutId);
 
             var vm = new LoggedOutViewModel
             {
                 AutomaticRedirectAfterSignOut = AccountOptions.AutomaticRedirectAfterSignOut,
-                PostLogoutRedirectUri = logout?.PostLogoutRedirectUri,
-                ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout?.ClientName,
-                SignOutIframeUrl = logout?.SignOutIFrameUrl,
+                PostLogoutRedirectUri = context?.PostLogoutRedirectUri,
+                ClientName = string.IsNullOrEmpty(context?.ClientName) ? context?.ClientId : context?.ClientName,
+                SignOutIframeUrl = context?.SignOutIFrameUrl,
                 LogoutId = logoutId
             };
             return vm;
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }

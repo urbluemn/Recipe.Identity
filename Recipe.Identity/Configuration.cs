@@ -29,7 +29,8 @@ namespace Recipe.Identity
         new List<IdentityResource>
         {
             new IdentityResources.OpenId(),
-            new IdentityResources.Profile()
+            new IdentityResources.Profile(),
+            new IdentityResources.Email()
         };
 
         public static IEnumerable<Client> Clients =>
@@ -90,6 +91,7 @@ namespace Recipe.Identity
                 {
                     IdentityServerConstants.StandardScopes.OpenId,
                     IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Email,
                     "RecipeWebAPI"
                 },
                 AllowAccessTokensViaBrowser = true

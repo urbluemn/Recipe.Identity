@@ -116,7 +116,7 @@ button{
     transition-duration: 0.5s;
 }
 
-.btn-secondary {
+/* .btn-secondary {
     width: 60%;
     display: block;
     margin-left: auto;
@@ -127,7 +127,7 @@ button{
 .btn-secondary:hover {
     background-color: #d36c59;
     color: white;
-}
+} */
 
 .btn-primary:hover {
     background-color: #AACB73;
