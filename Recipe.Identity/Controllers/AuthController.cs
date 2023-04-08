@@ -65,47 +65,53 @@ namespace Recipe.Identity.Controllers
                         return View(viewModel);
                     }
 
-                await _eventService.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
-                // only set explicit expiration here if user chooses "remember me". 
-                // otherwise we rely upon expiration configured in cookie middleware.
-                AuthenticationProperties props = null;
-                if (AccountOptions.AllowRememberLogin && viewModel.RememberLogin)
+                PasswordVerificationResult passresult = _userManager.PasswordHasher.VerifyHashedPassword(user,
+                    user.PasswordHash,
+                    viewModel.Password);
+                if(passresult == PasswordVerificationResult.Success)
                 {
-                    props = new AuthenticationProperties
+                    await _eventService.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id, user.UserName, clientId: context?.Client.ClientId));
+                    // only set explicit expiration here if user chooses "remember me". 
+                    // otherwise we rely upon expiration configured in cookie middleware.
+                    AuthenticationProperties props = null;
+                    if (AccountOptions.AllowRememberLogin && viewModel.RememberLogin)
                     {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
-                    };
-                }
-
-                await _signInManager.SignInAsync(user, props);
-
-                if (context != null)
-                {
-                    if (context.IsNativeClient())
-                    {
-                        // The client is native, so this change in how to
-                        // return the response is for better UX for the end user.
-                        return this.LoadingPage("Redirect", viewModel.ReturnUrl);
+                        props = new AuthenticationProperties
+                        {
+                            IsPersistent = true,
+                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                        };
                     }
 
-                    // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
-                    return Redirect(viewModel.ReturnUrl);
-                }
+                    await _signInManager.SignInAsync(user, props);
 
-                // request for a local page
-                if (Url.IsLocalUrl(viewModel.ReturnUrl))
-                {
-                    return Redirect(viewModel.ReturnUrl);
-                }
-                else if(string.IsNullOrEmpty(viewModel.ReturnUrl))
-                {
-                    return Redirect("https://localhost:7001");
-                }
-                else
-                {
-                    // user might have clicked on a malicious link - should be logged
-                    throw new Exception("invalid return URL");
+                    if (context != null)
+                    {
+                        if (context.IsNativeClient())
+                        {
+                            // The client is native, so this change in how to
+                            // return the response is for better UX for the end user.
+                            return this.LoadingPage("Redirect", viewModel.ReturnUrl);
+                        }
+
+                        // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
+                        return Redirect(viewModel.ReturnUrl);
+                    }
+
+                    // request for a local page
+                    if (Url.IsLocalUrl(viewModel.ReturnUrl))
+                    {
+                        return Redirect(viewModel.ReturnUrl);
+                    }
+                    else if(string.IsNullOrEmpty(viewModel.ReturnUrl))
+                    {
+                        return Redirect("https://localhost:7001");
+                    }
+                    else
+                    {
+                        // user might have clicked on a malicious link - should be logged
+                        throw new Exception("invalid return URL");
+                    }
                 }
             }
 
@@ -180,38 +186,43 @@ namespace Recipe.Identity.Controllers
         {
             if (ModelState.IsValid)
             {
-                AuthenticationProperties props = null;
-                if (AccountOptions.AllowRememberLogin && viewModel.RememberLogin)
+                if(_userManager.FindByNameAsync(viewModel.Username).Result == null)
                 {
-                    props = new AuthenticationProperties
+                    AuthenticationProperties props = null;
+                    if (AccountOptions.AllowRememberLogin && viewModel.RememberLogin)
                     {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                        props = new AuthenticationProperties
+                        {
+                            IsPersistent = true,
+                            ExpiresUtc = DateTimeOffset.UtcNow.Add(AccountOptions.RememberMeLoginDuration)
+                        };
+                    }
+
+                    var user = new AppUser
+                    {
+                        UserName = viewModel.Username,
+                        Email = viewModel.Email
                     };
-                }
 
-                var user = new AppUser
-                {
-                    UserName = viewModel.Username,
-                    Email = viewModel.Email
-                };
+                    await _userManager.CreateAsync(user, viewModel.Password);
 
-                await _userManager.CreateAsync(user, viewModel.Password);
+                    await _signInManager.SignInAsync(user, props);
 
-                await _signInManager.SignInAsync(user, props);
-
-                if (Url.IsLocalUrl(viewModel.ReturnUrl))
-                {
-                    return Redirect(viewModel.ReturnUrl);
+                    if (Url.IsLocalUrl(viewModel.ReturnUrl))
+                    {
+                        return Redirect(viewModel.ReturnUrl);
+                    }
+                    if (string.IsNullOrEmpty(viewModel.ReturnUrl))
+                    {
+                        return Redirect("https://localhost:7001");
+                    }
+                    else
+                    {
+                        throw new Exception("Invalid return URL");
+                    }
                 }
-                if (string.IsNullOrEmpty(viewModel.ReturnUrl))
-                {
-                    return Redirect("https://localhost:7001");
-                }
-                else
-                {
-                    throw new Exception("Invalid return URL");
-                }
+                ModelState.AddModelError(string.Empty, "Email or username are incorrect");
+                return View(viewModel);
             }
             ModelState.AddModelError(string.Empty, "Error occured");
             return View(viewModel);

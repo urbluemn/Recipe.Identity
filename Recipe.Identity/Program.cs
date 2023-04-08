@@ -71,6 +71,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseHttpsRedirection();
 app.UseIdentityServer();
 
 app.MapDefaultControllerRoute();
