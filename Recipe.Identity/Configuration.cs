@@ -77,7 +77,7 @@ namespace Recipe.Identity
                 AllowOfflineAccess = true,
                 RedirectUris =
                 {
-                    "https://localhost:7001/signin-oidc"
+                    "https://localhost:5001/signin-oidc"
                 },
                 // AllowedCorsOrigins =
                 // {
@@ -85,7 +85,7 @@ namespace Recipe.Identity
                 // },
                 PostLogoutRedirectUris =
                 {
-                    "https://localhost:7001/signout-callback-oidc"
+                    "https://localhost:5001/signout-callback-oidc"
                 },
                 AllowedScopes =
                 {
